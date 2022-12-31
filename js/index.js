@@ -1,14 +1,3 @@
-// https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Build_a_phone_with_peerjs/Connect_peers/Get_microphone_permission
-// https://www.assemblyai.com/blog/voice-to-text-javascript/
-// https://www.youtube.com/watch?v=TdvqNEuvaJU
-
-
-
-
-
-
-
-
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 const recognition = new SpeechRecognition();
 const synthesis = window.speechSynthesis;
@@ -47,24 +36,7 @@ POST: /api/chatgpt/chat/:id
  BODY: {message: string, conversationId: string | null, parentId: string | null}
       NOTE: conversationId is optional, if you omit it will start a new conversation
  RETURNS: {id: string, reply: Array<string>, conversationId: string, parentId: string, status: 'pending' | 'failed' | 'ready'}
-
 */
-function api_1 () {
-
-
-}
-
-/*
-
-
-*/
-
-function api_2 () {
-
-
-}
-
-
 
 function connectAPI () {
     $.ajax({
@@ -92,16 +64,24 @@ function checkStatusChatGPT() {
         type: 'GET',
         url: 'https://justbrowse.io/api/chatgpt/status',
         data: {
-            sessionId: 'N1_YJtteC6GCot2XrQn_Q'
-        },
-        headers: {
-            authorization: 'Bearer 0671e8587d1374413a8f94d6adcda7ef5acc6544c5245d22ed3b53ab1160b6609043c7c4ba23835d45ae30e7488b926a'
+            sessionId: 'JrP-Rz8LZES00imT-i9Xe'
         },
         success: function(data) {
             console.log(data["status"])
-            $('#icon-status-circle').css("background-color", "green");
-            $('#title-status-txt').css("color", "green");
-            $('#title-status-txt').text('Online');
+            if (data['status'] === 'failed') {
+                $('#icon-status-circle').css("background-color", "red");
+                $('#title-status-txt').css("color", "red");
+                $('#title-status-txt').text('Offline');
+            } else if (data['status'] === 'ready') {
+                $('#icon-status-circle').css("background-color", "green");
+                $('#title-status-txt').css("color", "green");
+                $('#title-status-txt').text('Online');
+            } else {
+                $('#icon-status-circle').css("background-color", "orange");
+                $('#title-status-txt').css("color", "orange");
+                $('#title-status-txt').text('Pending');
+            }
+            
         },
         error: function(xhr, status, error) {
             $('#icon-status-circle').css("background-color", "red");
@@ -111,6 +91,7 @@ function checkStatusChatGPT() {
         }
     });
 }
+checkStatusChatGPT();
 
 function addWritingMessageBot() {
     return `<div class="msg msg-chatgpt">
@@ -144,11 +125,11 @@ function addMessageUser(msg) {
     $('#chat-container').append(html);
 }
 
-function addMessageBotError() {
-    var html = `<div class="msg-user-error">
-                    <ion-icon name="close-circle-outline" size="small"></ion-icon>
-                    <p>Une erreur est survenue</p>
-                </div>`;
+function addMessageBotError(msg) {
+    var html = "<div class='msg-user-error'>"+
+                "<ion-icon name='close-circle-outline' size='small'></ion-icon>"+
+                "<p>"+ msg +"</p>"+
+                "</div>";
     $('#chat-container').append(html);
 }
 
@@ -176,7 +157,8 @@ function preg_replace(pattern, replacement, string) {
 
 function formatMsg(msg) {
     // format code
-    //new_msg = preg_replace("/\\`\\`\\`([^\\`]+)\\`\\`\\`/", '<code>$1</code>', msg)
+    new_msg = preg_replace("/\\`\\`\\`([^\\`]+)\\`\\`\\`/", '<code>$1</code>', msg) // 3 apostrophe
+    new_msg = preg_replace("/\\`([^\\`]+)\\`/", '<code>$1</code>', msg) // 1 apostrophe
 
     return msg
 }
@@ -186,64 +168,33 @@ function getCurrentTime () {
     return now.getHours() + ":" + now.getMinutes();
 }
 
-var conversationId = ""
+var conversationID = ""
 
 $(document).ready(function() {
     $('#form').on('submit', function(event) {
+
+        //checkStatusChatGPT();
+
         var inputText = $('#input-user').val();
 
         addMessageUser(inputText);
-
         playMessageNotif("sent");
 
-        if(conversationId === "") {
+        $('#chat-container').last()[0].scrollIntoView();
 
-            $.ajax({
-                type: 'GET',
-                url: 'https://api.pawan.krd/chat/gpt',
-                data: {text: inputText, lang: 'fr'},
-                beforeSend: function(request) {
-                    $('#chat-container').append(addWritingMessageBot());
-                },
-                success: function(data) {
-                    console.log(data);
-                    var msg = data["reply"]
-                    msg_formated = formatMsg(msg)
-                    console.log(msg_formated)
-                    // supprimer le message "Writing"
-                    $('#chat-container').children().last().remove();
-                    // on ajoute le message reçu
-                    addMessageBot(msg_formated)
-                    playMessageNotif("received");
-                    const utter = new SpeechSynthesisUtterance(data["reply"])
-                    synthesis.speak(utter);
-                },
-                error: function(xhr, status, error) {
-                    // supprimer le message "Writing"
-                    $('#chat-container').children().last().remove();
-                    addMessageBotError();
-                    console.log(xhr);
-                }
-            });
-   
-
-            /*
+        if(conversationID === "") {
             $.ajax({
                 type: 'POST',
-                url: 'https://justbrowse.io/api/chatgpt/chat/N1_YJtteC6GCot2XrQn_Q',
+                url: 'https://justbrowse.io/api/chatgpt/chat/JrP-Rz8LZES00imT-i9Xe',
                 data: {message: inputText},
-                headers: {
-                    'content-type': 'application/json',
-                    'authorization': 'Bearer 0671e8587d1374413a8f94d6adcda7ef5acc6544c5245d22ed3b53ab1160b6609043c7c4ba23835d45ae30e7488b926a'
-                },
                 beforeSend: function(request) {
                     $('#chat-container').append(addWritingMessageBot());
                 },
                 success: function(data) {
                     console.log(data);
                     var msg = data["reply"][0]
-                    conversationId = data["conversationId"]
-                    parentId = data["parentId"]
+                    conversationID = data["conversationId"]
+                    parentID = data["parentId"]
                     msg_formated = formatMsg(msg)
                     console.log(msg_formated)
                     // supprimer le message "Writing"
@@ -251,19 +202,49 @@ $(document).ready(function() {
                     // on ajoute le message reçu
                     addMessageBot(msg_formated)
                     playMessageNotif("received");
-                    const utter = new SpeechSynthesisUtterance(data["reply"][0])
-                    synthesis.speak(utter);
+                    //const utter = new SpeechSynthesisUtterance(data["reply"][0])
+                    //synthesis.speak(utter);
+                    $('#chat-container').last()[0].scrollIntoView();
                 },
                 error: function(xhr, status, error) {
                     // supprimer le message "Writing"
                     $('#chat-container').children().last().remove();
-                    addMessageBotError();
+                    addMessageBotError(xhr);
                     console.log(xhr);
                 }
             });
-            */
         } else {
-
+            $.ajax({
+                type: 'POST',
+                url: 'https://justbrowse.io/api/chatgpt/chat/JrP-Rz8LZES00imT-i9Xe',
+                data: {
+                    message: inputText,
+                    conversationId: conversationID,    
+                    parentId: parentID},
+                beforeSend: function(request) {
+                    $('#chat-container').append(addWritingMessageBot());
+                },
+                success: function(data) {
+                    console.log(data);
+                    var msg = data["reply"][0]
+                    msg_formated = formatMsg(msg)
+                    console.log(msg_formated)
+                    // supprimer le message "Writing"
+                    $('#chat-container').children().last().remove();
+                    // on ajoute le message reçu
+                    addMessageBot(msg_formated)
+                    playMessageNotif("received");
+                    //const utter = new SpeechSynthesisUtterance(data["reply"][0])
+                    //synthesis.speak(utter);
+                    $('#chat-container').last()[0].scrollIntoView();
+                },
+                error: function(xhr, status, error) {
+                    // supprimer le message "Writing"
+                    $('#chat-container').children().last().remove();
+                    addMessageBotError(xhr);
+                    console.log(xhr);
+                }
+            });
 
 
 
@@ -273,16 +254,3 @@ $(document).ready(function() {
         event.preventDefault();
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
