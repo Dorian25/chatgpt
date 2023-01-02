@@ -1,26 +1,18 @@
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-const synthesis = window.speechSynthesis;
-
-recognition.continuous = false; //
-recognition.lang = 'fr-FR';
-recognition.interimResults = false; //
-recognition.maxAlternatives = 1;
-
-recognition.addEventListener("result", (event) => {
-    var text = event.results[0][0].transcript;
-    input.value = text;
-    console.log('Confidence: ' + event.results[0][0].confidence);
+$(document).ready(function(){
+    $('#input-user').keypress((e) => { 
+        if (e.which == 13) { 
+            $('#form').submit(); 
+            e.preventDefault();
+        } 
+    });
 });
 
 
-const input = document.querySelector('#input-user');
-const talkBtn = document.querySelector("#talk-btn");
-
-$('#talk-btn').on("click", (event) => {
-    recognition.start();
-    console.log("recording")
-});
+function auto_height(elem) {
+    // https://stackoverflow.com/questions/6262472/multiple-lines-of-input-in-input-type-text
+    elem.style.height = '50px';
+    elem.style.height = (elem.scrollHeight)+"px";
+}
 
 /*
 Documentation for tonyb's API : https//:justbrowse.io
@@ -53,6 +45,14 @@ function connectAPI () {
         }
     });
 }
+
+function cleanInput() {
+    // clean input 
+    $('#input-user').val('');
+    $('#input-user').trigger('input');
+}
+
+cleanInput();
 
 
 function checkStatusChatGPT() {
@@ -87,6 +87,7 @@ function checkStatusChatGPT() {
         }
     });
 }
+// check status of the api
 checkStatusChatGPT();
 
 function addWritingMessageBot() {
@@ -130,7 +131,7 @@ function addMessageBotError(msg) {
 }
 
 function preg_replace(pattern, replacement, string) {
-    // eslint-disable-line camelcase
+    //   eslint-disable-line camelcase
     //   original by: rony2k6 (https://github.com/rony2k6)
     //   example 1: preg_replace('/xmas/i', 'Christmas', 'It was the night before Xmas.')
     //   returns 1: "It was the night before Christmas."
@@ -152,16 +153,21 @@ function preg_replace(pattern, replacement, string) {
 
 
 function formatMsg(msg) {
-    // format code
-    new_msg = preg_replace("/\\`\\`\\`([^\\`]+)\\`\\`\\`/", '<code>$1</code>', msg) // 3 apostrophe
-    new_msg = preg_replace("/\\`([^\\`]+)\\`/", '<code>$1</code>', msg) // 1 apostrophe
+    // format response of chatgpt
+    new_msg = preg_replace("\/\`\`\`([^\`]+)\`\`\`\/", '<code>$1</code>', msg) // 3 apostrophes
+    new_msg = preg_replace("\/\`([^\`]+)\`\/", '<code>$1</code>', new_msg) // 1 apostrophe
+    new_msg = preg_replace("\/(\\d+\\.\\ )\/", '<br>$1', new_msg) // numerotation 
 
-    return msg
+    return new_msg
 }
 
 function getCurrentTime () {
+    // https://stackoverflow.com/questions/8935414/getminutes-0-9-how-to-display-two-digit-numbers
     var now = new Date();
-    return now.getHours() + ":" + now.getMinutes();
+    var hours = (now.getHours()<10?'0':'') + now.getHours();
+    var minutes = (now.getMinutes()<10?'0':'') + now.getMinutes();
+
+    return hours + ":" + minutes;
 }
 
 var conversationID = ""
@@ -176,8 +182,8 @@ $(document).ready(function() {
         addMessageUser(inputText);
         playMessageNotif("sent");
 
-        $('#chat-container').last()[0].scrollIntoView();
-
+        cleanInput();
+        
         if(conversationID === "") {
             $.ajax({
                 type: 'POST',
@@ -198,14 +204,11 @@ $(document).ready(function() {
                     // on ajoute le message reçu
                     addMessageBot(msg_formated)
                     playMessageNotif("received");
-                    //const utter = new SpeechSynthesisUtterance(data["reply"][0])
-                    //synthesis.speak(utter);
-                    $('#chat-container').last()[0].scrollIntoView();
                 },
                 error: function(xhr, status, error) {
                     // supprimer le message "Writing"
                     $('#chat-container').children().last().remove();
-                    addMessageBotError(xhr);
+                    addMessageBotError(xhr.statusText);
                     console.log(xhr);
                 }
             });
@@ -230,23 +233,16 @@ $(document).ready(function() {
                     // on ajoute le message reçu
                     addMessageBot(msg_formated)
                     playMessageNotif("received");
-                    //const utter = new SpeechSynthesisUtterance(data["reply"][0])
-                    //synthesis.speak(utter);
-                    $('#chat-container').last()[0].scrollIntoView();
                 },
                 error: function(xhr, status, error) {
                     // supprimer le message "Writing"
                     $('#chat-container').children().last().remove();
-                    addMessageBotError(xhr);
+                    addMessageBotError(xhr.statusText);
                     console.log(xhr);
                 }
             });
-
-
-
         }
-
-
+        $('#chat-container').animate({scrollTop: $('#chat-container').prop("scrollHeight")}, 500);
         event.preventDefault();
     });
 });

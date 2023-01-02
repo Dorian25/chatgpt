@@ -2,9 +2,15 @@
 
 <html lang="en">
     <head>
+        <meta charset="UTF-8">
+        <meta name="description" content="Message ChatGPT">
+        <meta name="keywords" content="ChatGPT, Message, justbrowse.io">
+        <meta name="author" content="Dorian25">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
         <link rel="stylesheet" type="text/css" href='css/style.css'/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/three-dots/0.3.2/three-dots.css" integrity="sha512-T0LypOLfE+p06dLuhn7npxXy8VJt86Eyx4U5eeou9gWHwunC0KtuF7BCxR+eR21/gSrIuZtKEco8V3jMX+NC0A==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
-
+        
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.2.min.js" integrity="sha256-2krYZKh//PcchRtd+H+VyyQoZ/e3EcrkxhM8ycwASPA=" crossorigin="anonymous"></script>
         <script type="text/javascript" src="js/index.js"></script>
         <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
@@ -33,14 +39,10 @@
             </div>
         </div>
 
-
         <div id="chat-input">
-            <button id="talk-btn">
-                <ion-icon name="mic-outline" size="large"></ion-icon>
-            </button>
             <form id="form">
-                <input type="text" id="input-user" placeholder="Write a message" required>
-                <button type=submit" id="submit-btn">
+                <textarea rows="1" id="input-user" oninput="auto_height(this)" placeholder="Write a message" maxlength=250 required></textarea>
+                <button type="submit" id="submit-btn">
                     <ion-icon name="paper-plane-outline" size="large"></ion-icon>
                 </button>
             </form>
